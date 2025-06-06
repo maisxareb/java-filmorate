@@ -7,15 +7,16 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
-    private final List<User> users = new ArrayList<>();
+    private final Map<Integer, User> users = new HashMap();
     private Integer currentId = 1;
 
     @PostMapping
@@ -25,7 +26,7 @@ public class UserController {
         if (newUser.getName() == null || newUser.getName().isEmpty()) {
             newUser.setName(newUser.getLogin());
         }
-        users.add(newUser);
+        users.put(newUser.getId(), newUser);
         log.info("Создан новый пользователь: {}", newUser);
         return newUser;
     }
@@ -33,22 +34,20 @@ public class UserController {
     @PutMapping
     public User updateUser(@RequestBody User user) {
         validateUser(user);
-        for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).getId().equals(user.getId())) {
-                if (user.getName() == null || user.getName().isEmpty()) {
-                    user.setName(user.getLogin());
-                }
-                users.set(i, user);
-                log.info("Пользователь обновлен: {}", user);
-                return user;
+        if (users.containsKey(user.getId())) {
+            if (user.getName() == null || user.getName().isEmpty()) {
+                user.setName(user.getLogin());
             }
+            users.put(user.getId(), user);
+            log.info("Пользователь обновлен: {}", user);
+            return user;
         }
         throw new RuntimeException("Пользователь не найден.");
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return users;
+    public Collection<User> getAllUsers() {
+        return users.values();
     }
 
     private void validateUser(User user) {

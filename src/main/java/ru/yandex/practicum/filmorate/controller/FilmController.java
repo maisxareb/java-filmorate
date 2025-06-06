@@ -7,21 +7,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/films")
 public class FilmController {
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
-    private final List<Film> films = new ArrayList<>();
+    private final Map<Integer, Film> films = new HashMap();
     private int currentId = 1;
 
     @PostMapping
     public Film addFilm(@RequestBody Film film) {
         validateFilm(film);
         film.setId(currentId++);
-        films.add(film);
+        films.put(film.getId(), film);
         log.info("Добавлен фильм: {}", film);
         return film;
     }
@@ -29,19 +30,17 @@ public class FilmController {
     @PutMapping
     public Film updateFilm(@RequestBody Film film) {
         validateFilm(film);
-        for (int i = 0; i < films.size(); i++) {
-            if (films.get(i).getId().equals(film.getId())) {
-                films.set(i, film);
-                log.info("Обновлён фильм: {}", film);
-                return film;
-            }
+        if (films.containsKey(film.getId())) {
+            films.put(film.getId(), film);
+            log.info("Обновлен фильм: {}", film);
+            return film;
         }
         throw new RuntimeException("Фильм не найден");
     }
 
     @GetMapping
-    public List<Film> getAllFilms() {
-        return films;
+    public Collection<Film> getAllFilms() {
+        return films.values();
     }
 
     private void validateFilm(Film film) {
@@ -63,4 +62,4 @@ public class FilmController {
         }
     }
 }
-
+// Добрый день, подскажите по тестам пожалуйста, какие тесты мне добавить?
