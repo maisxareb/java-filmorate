@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> getAllFilms() {
-        return films.values();
+        return new ArrayList<>(films.values());
     }
 
     private void validateFilm(Film film) {
