@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/films")
@@ -20,31 +20,41 @@ public class FilmController {
 
     @PostMapping
     public ResponseEntity<Film> addFilm(@RequestBody Film film) {
-        return new ResponseEntity<>(film, HttpStatus.CREATED);
+        Film created = filmService.addFilm(film);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @PutMapping
     public ResponseEntity<Film> updateFilm(@RequestBody Film film) {
-        return ResponseEntity.ok(film);
+        Film updated = filmService.updateFilm(film);
+        return ResponseEntity.ok(updated);
     }
 
     @GetMapping
-    public Collection<Film> getAllFilms() {
-        return null;
+    public ResponseEntity<Collection<Film>> getAllFilms() {
+        return ResponseEntity.ok(filmService.getAllFilms());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Film> getFilm(@PathVariable Integer id) {
+        Film film = filmService.getFilmById(id);
+        return ResponseEntity.ok(film);
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
-        return null;
+    public ResponseEntity<List<Film>> getPopular(@RequestParam(defaultValue = "10") int count) {
+        return ResponseEntity.ok(filmService.getPopularFilms(count));
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public ResponseEntity<Film> likeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
+    public ResponseEntity<Void> likeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
+        filmService.addLike(id, userId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public ResponseEntity<Film> unlikeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
+    public ResponseEntity<Void> unlikeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
+        filmService.removeLike(id, userId);
         return ResponseEntity.ok().build();
     }
 }
