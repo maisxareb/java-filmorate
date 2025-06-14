@@ -37,6 +37,9 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Film> getFilm(@PathVariable Integer id) {
+        if (id == null) {
+            return ResponseEntity.badRequest().build();
+        }
         Film film = filmService.getFilmById(id);
         return ResponseEntity.ok(film);
     }
@@ -48,12 +51,18 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> likeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
+        if (id == null || userId == null) {
+            return ResponseEntity.badRequest().build();
+        }
         filmService.addLike(id, userId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> unlikeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
+        if (id == null || userId == null) {
+            return ResponseEntity.badRequest().build();
+        }
         filmService.removeLike(id, userId);
         return ResponseEntity.ok().build();
     }

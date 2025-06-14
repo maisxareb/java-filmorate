@@ -18,27 +18,33 @@ public class FilmService {
 
     public Film addFilm(Film film) {
         validateFilm(film);
-        return ((ru.yandex.practicum.filmorate.storage.FilmStorage) filmStorage).add(film);
+        return filmStorage.add(film);
     }
 
     public Film updateFilm(Film film) {
         validateFilm(film);
-        return ((ru.yandex.practicum.filmorate.storage.FilmStorage) filmStorage).update(film);
+        return filmStorage.update(film);
     }
 
     public Film getFilmById(Integer id) {
-        return ((ru.yandex.practicum.filmorate.storage.FilmStorage) filmStorage).getById(id);
+        if (id == null) {
+            throw new ValidationException("ID фильма не может быть null");
+        }
+        return filmStorage.getById(id);
     }
 
     public Collection<Film> getAllFilms() {
-        return ((ru.yandex.practicum.filmorate.storage.FilmStorage) filmStorage).getAll();
+        return filmStorage.getAll();
     }
 
     public List<Film> getPopularFilms(int count) {
-        return ((ru.yandex.practicum.filmorate.storage.FilmStorage) filmStorage).getPopular(count);
+        return filmStorage.getPopular(count);
     }
 
     public void addLike(Integer filmId, Integer userId) {
+        if (filmId == null || userId == null) {
+            throw new ValidationException("ID фильма и пользователя не могут быть null");
+        }
         Film film = getFilmById(filmId);
         if (film.getLikes().contains(userId)) {
             throw new IllegalArgumentException("Пользователь уже поставил лайк");
@@ -47,6 +53,9 @@ public class FilmService {
     }
 
     public void removeLike(Integer filmId, Integer userId) {
+        if (filmId == null || userId == null) {
+            throw new ValidationException("ID фильма и пользователя не могут быть null");
+        }
         Film film = getFilmById(filmId);
         if (!film.getLikes().contains(userId)) {
             throw new IllegalArgumentException("Лайк от пользователя не найден");

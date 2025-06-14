@@ -34,6 +34,9 @@ public class UserService {
     }
 
     public User getUserById(Integer id) {
+        if (id == null) {
+            throw new ValidationException("ID пользователя не может быть null");
+        }
         return userStorage.getById(id);
     }
 
@@ -42,16 +45,25 @@ public class UserService {
     }
 
     public void addFriend(Integer userId, Integer friendId) {
+        if (userId == null || friendId == null) {
+            throw new ValidationException("ID пользователя и друга не могут быть null");
+        }
         getOrCreateFriendsSet(userId).add(friendId);
         getOrCreateFriendsSet(friendId).add(userId);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
+        if (userId == null || friendId == null) {
+            throw new ValidationException("ID пользователя и друга не могут быть null");
+        }
         getOrCreateFriendsSet(userId).remove(friendId);
         getOrCreateFriendsSet(friendId).remove(userId);
     }
 
     public Collection<User> getFriends(Integer userId) {
+        if (userId == null) {
+            throw new ValidationException("ID пользователя не может быть null");
+        }
         Set<Integer> friendsIds = getOrCreateFriendsSet(userId);
         return friendsIds.stream()
                 .map(id -> userStorage.getById(id))
@@ -59,6 +71,9 @@ public class UserService {
     }
 
     public Collection<User> getCommonFriends(Integer userId, Integer otherId) {
+        if (userId == null || otherId == null) {
+            throw new ValidationException("ID пользователя не может быть null");
+        }
         Set<Integer> friends1 = getOrCreateFriendsSet(userId);
         Set<Integer> friends2 = getOrCreateFriendsSet(otherId);
         return friends1.stream()
