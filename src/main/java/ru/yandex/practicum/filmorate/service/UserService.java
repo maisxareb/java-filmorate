@@ -37,7 +37,7 @@ public class UserService {
         if (id == null) {
             throw new ValidationException("ID пользователя не может быть null");
         }
-        return userStorage.getById(id);
+        return userStorage.getById(id); // выбросит NoSuchElementException, если не найден
     }
 
     public Collection<User> getAllUsers() {
@@ -59,9 +59,7 @@ public class UserService {
     }
 
     public Collection<User> getFriends(Integer userId) {
-        if (userId == null) {
-            throw new ValidationException("ID пользователя не может быть null");
-        }
+        User user = getUserById(userId); // выбросит исключение, если не найден
         Set<Integer> friendsIds = getOrCreateFriendsSet(userId);
         return friendsIds.stream()
                 .map(id -> userStorage.getById(id))
@@ -69,9 +67,8 @@ public class UserService {
     }
 
     public Collection<User> getCommonFriends(Integer userId, Integer otherId) {
-        if (userId == null || otherId == null) {
-            throw new ValidationException("ID пользователя не может быть null");
-        }
+        User user = getUserById(userId);
+        User otherUser = getUserById(otherId);
         Set<Integer> friends1 = getOrCreateFriendsSet(userId);
         Set<Integer> friends2 = getOrCreateFriendsSet(otherId);
         return friends1.stream()
