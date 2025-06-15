@@ -44,17 +44,15 @@ public class UserService {
     }
 
     public void addFriend(Integer userId, Integer friendId) {
-        if (userId == null || friendId == null) {
-            throw new ValidationException("ID пользователя и друга не могут быть null");
-        }
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
         getOrCreateFriendsSet(userId).add(friendId);
         getOrCreateFriendsSet(friendId).add(userId);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
-        if (userId == null || friendId == null) {
-            throw new ValidationException("ID пользователя и друга не могут быть null");
-        }
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
         getOrCreateFriendsSet(userId).remove(friendId);
         getOrCreateFriendsSet(friendId).remove(userId);
     }
