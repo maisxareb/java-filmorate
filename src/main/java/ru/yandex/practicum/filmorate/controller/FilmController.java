@@ -5,9 +5,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-
 import java.util.List;
 import java.util.Collection;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/films")
@@ -37,11 +37,12 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Film> getFilm(@PathVariable Integer id) {
-        if (id == null) {
-            return ResponseEntity.badRequest().build();
+        try {
+            Film film = filmService.getFilmById(id);
+            return ResponseEntity.ok(film);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        Film film = filmService.getFilmById(id);
-        return ResponseEntity.ok(film);
     }
 
     @GetMapping("/popular")
@@ -51,19 +52,21 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> likeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
-        if (id == null || userId == null) {
-            return ResponseEntity.badRequest().build();
+        try {
+            filmService.addLike(id, userId);
+            return ResponseEntity.ok().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        filmService.addLike(id, userId);
-        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<Void> unlikeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
-        if (id == null || userId == null) {
-            return ResponseEntity.badRequest().build();
+        try {
+            filmService.removeLike(id, userId);
+            return ResponseEntity.ok().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        filmService.removeLike(id, userId);
-        return ResponseEntity.ok().build();
     }
 }
