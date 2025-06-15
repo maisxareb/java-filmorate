@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -59,7 +58,7 @@ public class UserService {
     }
 
     public Collection<User> getFriends(Integer userId) {
-        User user = getUserById(userId); // выбросит исключение, если не найден
+        getUserById(userId); // выбросит исключение, если не найден
         Set<Integer> friendsIds = getOrCreateFriendsSet(userId);
         return friendsIds.stream()
                 .map(id -> userStorage.getById(id))
@@ -67,8 +66,8 @@ public class UserService {
     }
 
     public Collection<User> getCommonFriends(Integer userId, Integer otherId) {
-        User user = getUserById(userId);
-        User otherUser = getUserById(otherId);
+        getUserById(userId);
+        getUserById(otherId);
         Set<Integer> friends1 = getOrCreateFriendsSet(userId);
         Set<Integer> friends2 = getOrCreateFriendsSet(otherId);
         return friends1.stream()
