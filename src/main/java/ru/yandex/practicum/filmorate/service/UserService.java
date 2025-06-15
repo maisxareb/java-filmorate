@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,15 +45,15 @@ public class UserService {
     }
 
     public void addFriend(Integer userId, Integer friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
+        User user = getUserById(userId); // выбросит исключение, если не найден
+        User friend = getUserById(friendId); // выбросит исключение, если не найден
         getOrCreateFriendsSet(userId).add(friendId);
         getOrCreateFriendsSet(friendId).add(userId);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
+        User user = getUserById(userId); // выбросит исключение, если не найден
+        User friend = getUserById(friendId); // выбросит исключение, если не найден
         getOrCreateFriendsSet(userId).remove(friendId);
         getOrCreateFriendsSet(friendId).remove(userId);
     }

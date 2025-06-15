@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -21,7 +22,7 @@ public class ErrorHandler {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<Map<String, String>> handleNotFoundException(NoSuchElementException ex) {
         Map<String, String> errorBody = new HashMap<>();
-        errorBody.put("error", ex.getMessage());
+        errorBody.put("error", ex.getMessage()); // сообщение об ошибке
         return new ResponseEntity<>(errorBody, HttpStatus.NOT_FOUND);
     }
 
