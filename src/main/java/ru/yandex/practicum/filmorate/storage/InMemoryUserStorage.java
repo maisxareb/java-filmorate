@@ -10,14 +10,14 @@ public class InMemoryUserStorage implements UserStorage {
     private int currentId = 1;
 
     @Override
-    public User add(User user) {
+    public synchronized User add(User user) {
         user.setId(currentId++);
         users.put(user.getId(), user);
         return user;
     }
 
     @Override
-    public User update(User user) {
+    public synchronized User update(User user) {
         if (!users.containsKey(user.getId())) {
             throw new NoSuchElementException("Пользователь не найден");
         }
@@ -26,12 +26,12 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void delete(Integer id) {
+    public synchronized void delete(Integer id) {
         users.remove(id);
     }
 
     @Override
-    public User getById(Integer id) {
+    public synchronized User getById(Integer id) {
         if (!users.containsKey(id)) {
             throw new NoSuchElementException("Пользователь не найден");
         }
@@ -39,7 +39,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Collection<User> getAll() {
+    public synchronized Collection<User> getAll() {
         return new ArrayList<>(users.values());
     }
 }

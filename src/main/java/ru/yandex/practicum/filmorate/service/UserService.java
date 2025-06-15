@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,7 +38,7 @@ public class UserService {
         if (id == null) {
             throw new ValidationException("ID пользователя не может быть null");
         }
-        return userStorage.getById(id); // выбросит NoSuchElementException, если не найден
+        return userStorage.getById(id);
     }
 
     public Collection<User> getAllUsers() {
@@ -44,21 +46,21 @@ public class UserService {
     }
 
     public void addFriend(Integer userId, Integer friendId) {
-        User user = getUserById(userId); // выбросит исключение, если не найден
-        User friend = getUserById(friendId); // выбросит исключение, если не найден
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
         getOrCreateFriendsSet(userId).add(friendId);
         getOrCreateFriendsSet(friendId).add(userId);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
-        User user = getUserById(userId); // выбросит исключение, если не найден
-        User friend = getUserById(friendId); // выбросит исключение, если не найден
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
         getOrCreateFriendsSet(userId).remove(friendId);
         getOrCreateFriendsSet(friendId).remove(userId);
     }
 
     public Collection<User> getFriends(Integer userId) {
-        getUserById(userId); // выбросит исключение, если не найден
+        getUserById(userId);
         Set<Integer> friendsIds = getOrCreateFriendsSet(userId);
         return friendsIds.stream()
                 .map(id -> userStorage.getById(id))
@@ -87,7 +89,7 @@ public class UserService {
         if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
             throw new ValidationException("Некорректный login");
         }
-        if (user.getBirthday() != null && user.getBirthday().isAfter(java.time.LocalDate.now())) {
+        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("Дата рождения в будущем");
         }
     }
