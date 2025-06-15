@@ -41,9 +41,6 @@ public class FilmService {
     }
 
     public void addLike(Integer filmId, Integer userId) {
-        if (filmId == null || userId == null) {
-            throw new ValidationException("ID фильма и пользователя не могут быть null");
-        }
         Film film = getFilmById(filmId);
         if (film.getLikes().contains(userId)) {
             throw new IllegalArgumentException("Пользователь уже поставил лайк");
@@ -52,9 +49,6 @@ public class FilmService {
     }
 
     public void removeLike(Integer filmId, Integer userId) {
-        if (filmId == null || userId == null) {
-            throw new ValidationException("ID фильма и пользователя не могут быть null");
-        }
         Film film = getFilmById(filmId);
         if (!film.getLikes().contains(userId)) {
             throw new IllegalArgumentException("Лайк от пользователя не найден");

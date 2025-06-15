@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -50,22 +51,24 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<?> addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+    public ResponseEntity<Map<String, String>> addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
         try {
             userService.addFriend(id, friendId);
             return ResponseEntity.ok().build();
         } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<?> removeFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+    public ResponseEntity<Map<String, String>> removeFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
         try {
             userService.removeFriend(id, friendId);
             return ResponseEntity.ok().build();
         } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 
