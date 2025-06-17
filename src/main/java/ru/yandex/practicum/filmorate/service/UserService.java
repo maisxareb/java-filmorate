@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -10,13 +11,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
     private final Map<Integer, Set<Integer>> friendsMap = new HashMap<>();
-
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
 
     public User createUser(User user) {
         validateUser(user);

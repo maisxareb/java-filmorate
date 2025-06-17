@@ -11,14 +11,14 @@ public class InMemoryFilmStorage implements FilmStorage {
     private int currentId = 1;
 
     @Override
-    public synchronized Film add(Film film) {
+    public Film add(Film film) {
         film.setId(currentId++);
         films.put(film.getId(), film);
         return film;
     }
 
     @Override
-    public synchronized Film update(Film film) {
+    public Film update(Film film) {
         if (!films.containsKey(film.getId())) {
             throw new NoSuchElementException("Фильм не найден");
         }
@@ -27,12 +27,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public synchronized void delete(Integer id) {
+    public void delete(Integer id) {
         films.remove(id);
     }
 
     @Override
-    public synchronized Film getById(Integer id) {
+    public Film getById(Integer id) {
         if (!films.containsKey(id)) {
             throw new NoSuchElementException("Фильм не найден");
         }
@@ -40,12 +40,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public synchronized Collection<Film> getAll() {
+    public Collection<Film> getAll() {
         return new ArrayList<>(films.values());
     }
 
     @Override
-    public synchronized List<Film> getPopular(int count) {
+    public List<Film> getPopular(int count) {
         return films.values().stream()
                 .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
                 .limit(count)
