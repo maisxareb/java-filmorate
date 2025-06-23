@@ -1,66 +1,60 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import java.util.List;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/films")
+@RequiredArgsConstructor
 public class FilmController {
-    private static final Logger log = LoggerFactory.getLogger(FilmController.class);
-    private final Map<Integer, Film> films = new HashMap();
-    private int currentId = 1;
+    private final FilmService filmService;
 
     @PostMapping
-    public Film addFilm(@RequestBody Film film) {
-        validateFilm(film);
-        film.setId(currentId++);
-        films.put(film.getId(), film);
-        log.info("Добавлен фильм: {}", film);
-        return film;
+    public ResponseEntity<Film> addFilm(@RequestBody Film film) {
+        Film created = filmService.addFilm(film);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film film) {
-        validateFilm(film);
-        if (films.containsKey(film.getId())) {
-            films.put(film.getId(), film);
-            log.info("Обновлен фильм: {}", film);
-            return film;
-        }
-        throw new RuntimeException("Фильм не найден");
+    public ResponseEntity<Film> updateFilm(@RequestBody Film film) {
+        Film updated = filmService.updateFilm(film);
+        return ResponseEntity.ok(updated);
     }
 
     @GetMapping
-    public Collection<Film> getAllFilms() {
-        return new ArrayList<>(films.values());
+    public ResponseEntity<Collection<Film>> getAllFilms() {
+        Collection<Film> films = filmService.getAllFilms();
+        return ResponseEntity.ok(films);
     }
 
-    private void validateFilm(Film film) {
-        if (film.getName() == null || film.getName().isEmpty()) {
-            log.error("Название фильма не может быть пустым");
-            throw new ValidationException("Название фильма не может быть пустым");
-        }
-        if (film.getDescription() != null && film.getDescription().length() > 200) {
-            log.error("Описание не может превышать 200 символов");
-            throw new ValidationException("Описание не может превышать 200 символов");
-        }
-        if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            log.error("Дата релиза не может быть раньше 28.12.1895");
-            throw new ValidationException("Дата релиза не может быть раньше 28.12.1895");
-        }
-        if (film.getDuration() == null || film.getDuration() <= 0) {
-            log.error("Продолжительность должна быть положительным числом");
-            throw new ValidationException("Продолжительность должна быть положительным числом");
-        }
+    @GetMapping("/{id}")
+    public ResponseEntity<Film> getFilm(@PathVariable Integer id) {
+        Film film = filmService.getFilmById(id);
+        return ResponseEntity.ok(film);
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<List<Film>> getPopular(@RequestParam(defaultValue = "10") int count) {
+        List<Film> popularFilms = filmService.getPopularFilms(count);
+        return ResponseEntity.ok(popularFilms);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public ResponseEntity<Film> likeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
+        filmService.addLike(id, userId);
+        Film film = filmService.getFilmById(id);
+        return ResponseEntity.ok(film);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public ResponseEntity<Void> unlikeFilm(@PathVariable Integer id, @PathVariable Integer userId) {
+        filmService.removeLike(id, userId);
+        return ResponseEntity.ok().build();
     }
 }
-// Добрый день, подскажите по тестам пожалуйста, какие тесты мне добавить?
