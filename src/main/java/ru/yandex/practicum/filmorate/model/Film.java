@@ -22,7 +22,7 @@ public class Film {
 
     private Integer rate; //= LikesRating.G;
     private Long id;
-    final private Set<Long> likes;
+    private final Set<Long> likes;
 
     @NonNull
     @NotBlank
