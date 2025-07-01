@@ -37,9 +37,6 @@ public class FilmController {
     @PostMapping
     public Film create(@RequestBody Film film) {
         log.info("Запрос на создание фильма: {}", film);
-        validateFilm(film);
-        validateMpa(film.getMpa().getId());
-        validateGenres(film.getGenres());
         Film createdFilm = filmService.create(film);
         log.info("Создан новый фильм: {}", createdFilm);
         return createdFilm;
@@ -48,9 +45,6 @@ public class FilmController {
     @PutMapping
     public Film update(@RequestBody Film film) {
         log.info("Запрос на обновление фильма: {}", film);
-        validateFilm(film);
-        validateMpa(film.getMpa().getId());
-        validateGenres(film.getGenres());
         Film updatedFilm = filmService.update(film);
         log.info("Обновлен фильм: {}", updatedFilm);
         return updatedFilm;
@@ -80,52 +74,8 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopular(
-            @RequestParam(defaultValue = "10") int count) {
+    public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
         log.info("Запрос {} популярных фильмов", count);
         return filmService.getPopularFilms(count);
-    }
-
-    private void validateFilm(Film film) {
-        if (film.getName() == null || film.getName().isBlank()) {
-            log.error("Название фильма не может быть пустым");
-            throw new ValidationException("Название не может быть пустым");
-        }
-        if (film.getDescription() != null && film.getDescription().length() > 200) {
-            log.error("Описание превышает 200 символов");
-            throw new ValidationException("Максимальная длина описания — 200 символов");
-        }
-        if (film.getReleaseDate() == null) {
-            log.error("Дата релиза не указана");
-            throw new ValidationException("Дата релиза обязательна");
-        }
-        if (film.getReleaseDate().isBefore(CINEMA_BIRTHDAY)) {
-            log.error("Некорректная дата релиза: {}", film.getReleaseDate());
-            throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
-        }
-        if (film.getDuration() <= 0) {
-            log.error("Некорректная продолжительность: {}", film.getDuration());
-            throw new ValidationException("Продолжительность должна быть положительной");
-        }
-    }
-
-    private void validateMpa(int mpaId) {
-        try {
-            mpaStorage.getById(mpaId);
-        } catch (MpaNotFoundException e) {
-            throw new MpaNotFoundException("Рейтинг MPA с id=" + mpaId + " не найден");
-        }
-    }
-
-    private void validateGenres(Set<Genre> genres) {
-        if (genres != null) {
-            for (Genre genre : genres) {
-                try {
-                    genreStorage.getById(genre.getId());
-                } catch (GenreNotFoundException e) {
-                    throw new GenreNotFoundException("Жанр с id=" + genre.getId() + " не найден");
-                }
-            }
-        }
     }
 }

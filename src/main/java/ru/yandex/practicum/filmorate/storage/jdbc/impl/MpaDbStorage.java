@@ -20,13 +20,17 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public List<MpaRating> getAll() {
-        String sql = "SELECT * FROM mpa_ratings ORDER BY id";
+        String sql = """
+                SELECT * FROM mpa_ratings ORDER BY id
+                """;
         return jdbcTemplate.query(sql, this::mapRowToMpa);
     }
 
     @Override
     public MpaRating getById(int id) {
-        String sql = "SELECT * FROM mpa_ratings WHERE id = ?";
+        String sql = """
+                SELECT * FROM mpa_ratings WHERE id = ?
+                """;
         try {
             return jdbcTemplate.queryForObject(sql, this::mapRowToMpa, id);
         } catch (Exception e) {

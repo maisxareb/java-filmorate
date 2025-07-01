@@ -43,7 +43,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ? WHERE id = ?";
+        String sql = """
+                UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ? WHERE id = ?
+                """;
         int rowsUpdated = jdbcTemplate.update(
                 sql,
                 film.getName(),
@@ -57,7 +59,9 @@ public class FilmDbStorage implements FilmStorage {
             throw new FilmNotFoundException("Фильм с id=" + film.getId() + " не найден");
         }
 
-        jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
+        jdbcTemplate.update("""
+                DELETE FROM film_genres WHERE film_id = ?
+                """, film.getId());
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             updateFilmGenres(film);
         }
@@ -68,20 +72,26 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film delete(int id) {
         Film film = getById(id);
-        String sql = "DELETE FROM films WHERE id = ?";
+        String sql = """
+                DELETE FROM films WHERE id = ?
+                """;
         jdbcTemplate.update(sql, id);
         return film;
     }
 
     @Override
     public Collection<Film> getAll() {
-        String sql = "SELECT f.*, m.name AS mpa_name FROM films f JOIN mpa_ratings m ON f.mpa_rating_id = m.id";
+        String sql = """
+                SELECT f.*, m.name AS mpa_name FROM films f JOIN mpa_ratings m ON f.mpa_rating_id = m.id
+                """;
         return jdbcTemplate.query(sql, this::mapRowToFilm);
     }
 
     @Override
     public Film getById(int id) {
-        String sql = "SELECT f.*, m.name AS mpa_name FROM films f JOIN mpa_ratings m ON f.mpa_rating_id = m.id WHERE f.id = ?";
+        String sql = """
+                SELECT f.*, m.name AS mpa_name FROM films f JOIN mpa_ratings m ON f.mpa_rating_id = m.id WHERE f.id = ?
+                """;
         try {
             Film film = jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id);
             loadGenresForFilm(film);
@@ -124,15 +134,23 @@ public class FilmDbStorage implements FilmStorage {
             batchArgs.add(new Object[]{film.getId(), genre.getId()});
         }
         jdbcTemplate.batchUpdate(
-                "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
+                """
+                        INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)
+                        """,
                 batchArgs
         );
     }
 
     private void loadGenresForFilm(Film film) {
-        String sql = "SELECT g.id, g.name FROM film_genres fg JOIN genres g ON fg.genre_id = g.id " +
-                "WHERE fg.film_id = ? " +
-                "ORDER BY g.id";
+        String sql = """
+                SELECT g.id, g.name FROM film_genres fg JOIN genres g ON fg.genre_id = g.id 
+                """ +
+                """
+                        WHERE fg.film_id = ? 
+                        """ +
+                """
+                        ORDER BY g.id
+                        """;
         Set<Genre> genres = new HashSet<>(jdbcTemplate.query(sql, this::mapRowToGenre, film.getId()));
         film.setGenres(genres);
     }

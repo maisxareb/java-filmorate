@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.jdbc.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -15,6 +16,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 
+@Primary
 @Repository
 @Qualifier("userDbStorage")
 public class UserDbStorage implements UserStorage {
@@ -37,7 +39,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User update(User user) {
-        String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
+        String sql = """
+                UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?
+                """;
         int rowsUpdated = jdbcTemplate.update(
                 sql,
                 user.getEmail(),
@@ -55,20 +59,26 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User delete(int id) {
         User user = getById(id);
-        String sql = "DELETE FROM users WHERE id = ?";
+        String sql = """
+                DELETE FROM users WHERE id = ?
+                """;
         jdbcTemplate.update(sql, id);
         return user;
     }
 
     @Override
     public Collection<User> getAll() {
-        String sql = "SELECT * FROM users";
+        String sql = """
+                SELECT * FROM users
+                """;
         return jdbcTemplate.query(sql, this::mapRowToUser);
     }
 
     @Override
     public User getById(int id) {
-        String sql = "SELECT * FROM users WHERE id = ?";
+        String sql = """
+                SELECT * FROM users WHERE id = ?
+                """;
         try {
             return jdbcTemplate.queryForObject(sql, this::mapRowToUser, id);
         } catch (EmptyResultDataAccessException e) {

@@ -4,9 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -39,14 +37,12 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Collection<User> getAll() {
-        return users.values();
+        return new ArrayList<>(users.values());
     }
 
     @Override
     public User getById(int id) {
-        if (!users.containsKey(id)) {
-            throw new UserNotFoundException("Пользователь с id=" + id + " не найден");
-        }
-        return users.get(id);
+        return Optional.ofNullable(users.get(id))
+                .orElseThrow(() -> new UserNotFoundException("Пользователь с id=" + id + " не найден"));
     }
 }

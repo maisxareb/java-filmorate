@@ -7,9 +7,7 @@ import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -48,15 +46,14 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getAll() {
-        return films.values();
+        return new ArrayList<>(films.values());
     }
 
     @Override
     public Film getById(int id) {
-        if (!films.containsKey(id)) {
-            throw new FilmNotFoundException("Фильм с id=" + id + " не найден");
-        }
-        return films.get(id);
+        return Optional.ofNullable(films.get(id))
+                .orElseThrow(() -> new FilmNotFoundException("Фильм с id=" + id + " не найден"));
     }
+
 
 }

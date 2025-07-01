@@ -20,13 +20,17 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public List<Genre> getAll() {
-        String sql = "SELECT * FROM genres ORDER BY id";
+        String sql = """
+                SELECT * FROM genres ORDER BY id
+                """;
         return jdbcTemplate.query(sql, this::mapRowToGenre);
     }
 
     @Override
     public Genre getById(int id) {
-        String sql = "SELECT * FROM genres WHERE id = ?";
+        String sql = """
+                SELECT * FROM genres WHERE id = ?
+                """;
         try {
             return jdbcTemplate.queryForObject(sql, this::mapRowToGenre, id);
         } catch (Exception e) {
