@@ -143,10 +143,10 @@ public class FilmDbStorage implements FilmStorage {
 
     private void loadGenresForFilm(Film film) {
         String sql = """
-                SELECT g.id, g.name FROM film_genres fg JOIN genres g ON fg.genre_id = g.id 
+                SELECT g.id, g.name FROM film_genres fg JOIN genres g ON fg.genre_id = g.id
                 """ +
                 """
-                        WHERE fg.film_id = ? 
+                        WHERE fg.film_id = ?
                         """ +
                 """
                         ORDER BY g.id
