@@ -1,66 +1,80 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.InternalServerException;
+import ru.yandex.practicum.filmorate.exception.UnableToFindException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 
-@RestController
+import java.util.Collection;
+import java.util.Optional;
+
+@Slf4j
+@RestController("")
 @RequestMapping("/users")
-@RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
+
+    private final UserService service;
+
+    @Autowired
+    public UserController(UserService service) {
+        this.service = service;
+    }
+
+    @PutMapping("{id}/friends/{friendId}")
+    public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        if (id < 1 || friendId < 1) {
+            throw new UnableToFindException();
+        }
+        service.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("{id}/friends/{friendId}")
+    public void removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        service.removeFriend(id, friendId);
+    }
+
+    @GetMapping("{id}/friends")
+    public Collection<User> getFriends(@PathVariable Long id) {
+        return service.getFriends(id);
+    }
+
+    @GetMapping("{id}/friends/common/{otherId}")
+    public Collection<User> getCrossFriend(@PathVariable Long id, @PathVariable Long otherId) {
+        return service.getCrossFriends(id, otherId);
+    }
+
+    @GetMapping("{id}")
+    public Optional<User> findById(@PathVariable Long id) {
+        if (!service.findById(id).isPresent()) {
+            throw new UnableToFindException();
+        }
+        return service.findById(id);
+    }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User createdUser = userService.createUser(user);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+    public Optional<User> createUser(@Valid @RequestBody User user) {
+        if (user.getId() != null && user.getId() < 1) {
+            throw new InternalServerException();
+        }
+        return service.createUser(user);
     }
 
     @PutMapping
-    public ResponseEntity<User> updateUser(@RequestBody User user) {
-        User updatedUser = userService.updateUser(user);
-        return ResponseEntity.ok(updatedUser);
+    public Optional<User> updateUser(@Valid @RequestBody User user) {
+        if (user.getId() != null && user.getId() < 1) {
+            throw new UnableToFindException();
+        }
+        return service.updateUser(user);
+
     }
 
     @GetMapping
-    public ResponseEntity<Collection<User>> getAllUsers() {
-        Collection<User> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUser(@PathVariable Integer id) {
-        User user = userService.getUserById(id);
-        return ResponseEntity.ok(user);
-    }
-
-    @PutMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Map<String, String>> addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
-        userService.addFriend(id, friendId);
-        return ResponseEntity.ok(Collections.singletonMap("message", "Friend added successfully"));
-    }
-
-    @DeleteMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Map<String, String>> removeFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
-        userService.removeFriend(id, friendId);
-        return ResponseEntity.ok(Collections.singletonMap("message", "Friend removed successfully"));
-    }
-
-    @GetMapping("/{id}/friends")
-    public ResponseEntity<Collection<User>> getFriends(@PathVariable Integer id) {
-        Collection<User> friends = userService.getFriends(id);
-        return ResponseEntity.ok(friends);
-    }
-
-    @GetMapping("/{id}/friends/common/{otherId}")
-    public ResponseEntity<Collection<User>> getCommonFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
-        Collection<User> commonFriends = userService.getCommonFriends(id, otherId);
-        return ResponseEntity.ok(commonFriends);
+    public Collection<User> findAll() {
+        log.info("findAll");
+        return service.findAll();
     }
 }
