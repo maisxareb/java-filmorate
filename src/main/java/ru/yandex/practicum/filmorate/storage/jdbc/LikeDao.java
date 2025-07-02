@@ -14,23 +14,33 @@ public class LikeDao {
     }
 
     public void addLike(int filmId, int userId) {
-        String sql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+        String sql = """
+                INSERT INTO likes (film_id, user_id) VALUES (?, ?)
+                """;
         jdbcTemplate.update(sql, filmId, userId);
     }
 
     public void removeLike(int filmId, int userId) {
-        String sql = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+        String sql = """
+                DELETE FROM likes WHERE film_id = ? AND user_id = ?
+                """;
         jdbcTemplate.update(sql, filmId, userId);
     }
 
     public List<Integer> getLikes(int filmId) {
-        String sql = "SELECT user_id FROM likes WHERE film_id = ?";
+        String sql = """
+                SELECT user_id FROM likes WHERE film_id = ?
+                """;
         return jdbcTemplate.queryForList(sql, Integer.class, filmId);
     }
 
     public List<Integer> getPopularFilms(int count) {
-        String sql = "SELECT film_id FROM likes " +
-                "GROUP BY film_id ORDER BY COUNT(user_id) DESC LIMIT ?";
+        String sql = """
+                SELECT film_id FROM likes
+                """ +
+                """
+                        GROUP BY film_id ORDER BY COUNT(user_id) DESC LIMIT ?
+                        """;
         return jdbcTemplate.queryForList(sql, Integer.class, count);
     }
 }

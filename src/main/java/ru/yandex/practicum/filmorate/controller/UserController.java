@@ -24,7 +24,6 @@ public class UserController {
     @PostMapping
     public User create(@RequestBody User user) {
         log.info("Запрос на создание пользователя: {}", user);
-        // validateUser(user); // Удалено
         setUserNameIfEmpty(user);
         User createdUser = userService.create(user);
         log.info("Создан новый пользователь: {}", createdUser);
@@ -34,7 +33,6 @@ public class UserController {
     @PutMapping
     public User update(@RequestBody User user) {
         log.info("Запрос на обновление пользователя: {}", user);
-        // validateUser(user); // Удалено
         setUserNameIfEmpty(user);
         User updatedUser = userService.update(user);
         log.info("Обновлен пользователь: {}", updatedUser);
