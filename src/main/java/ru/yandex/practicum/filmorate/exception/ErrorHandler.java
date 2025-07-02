@@ -1,48 +1,51 @@
 package ru.yandex.practicum.filmorate.exception;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class ErrorHandler {
+    private static final Logger log = LoggerFactory.getLogger(ErrorHandler.class);
 
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<Map<String, String>> handleValidationException(ValidationException ex) {
-        Map<String, String> errorBody = new HashMap<>();
-        errorBody.put("error", ex.getMessage());
-        return new ResponseEntity<>(errorBody, HttpStatus.BAD_REQUEST);
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidationException(final ValidationException e) {
+        log.warn("Ошибка валидации: {}", e.getMessage());
+        return new ErrorResponse("Ошибка валидации: " + e.getMessage());
     }
 
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Map<String, String>> handleNotFoundException(NoSuchElementException ex) {
-        Map<String, String> errorBody = new HashMap<>();
-        errorBody.put("error", ex.getMessage());
-        return new ResponseEntity<>(errorBody, HttpStatus.NOT_FOUND);
+    @ExceptionHandler({FilmNotFoundException.class, UserNotFoundException.class,
+            GenreNotFoundException.class, MpaNotFoundException.class})
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNotFoundException(final RuntimeException e) {
+        log.warn("Объект не найден: {}", e.getMessage());
+        return new ErrorResponse("Объект не найден: " + e.getMessage());
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
-        Map<String, String> errorBody = new HashMap<>();
-        errorBody.put("error", ex.getMessage());
-        return new ResponseEntity<>(errorBody, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleOtherExceptions(Exception ex) {
-        Map<String, String> errorBody = new HashMap<>();
-        errorBody.put("error", "Internal server error");
-        return new ResponseEntity<>(errorBody, HttpStatus.INTERNAL_SERVER_ERROR);
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleOtherExceptions(final Throwable e) {
+        log.error("Внутренняя ошибка сервера", e);
+        return new ErrorResponse("Произошла непредвиденная ошибка: " + e.getMessage());
     }
 
     @ExceptionHandler(LikeNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleLikeNotFound(LikeNotFoundException ex) {
-        Map<String, String> errorBody = new HashMap<>();
-        errorBody.put("error", ex.getMessage());
-        return new ResponseEntity<>(errorBody, HttpStatus.NOT_FOUND);
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleLikeNotFoundException(final LikeNotFoundException e) {
+        log.warn("Лайк не найден: {}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class ErrorResponse {
+        private String error;
     }
 }

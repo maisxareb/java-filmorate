@@ -1,94 +1,111 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.jdbc.FriendshipDao;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
+    private final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserStorage userStorage;
-    private final Map<Integer, Set<Integer>> friendsMap = new HashMap<>();
+    private final FriendshipDao friendshipDao;
 
-    public User createUser(User user) {
-        validateUser(user);
-        if (user.getName() == null || user.getName().isEmpty()) {
-            user.setName(user.getLogin());
-        }
-        return userStorage.add(user);
+    @Autowired
+    public UserService(
+            @Qualifier("userDbStorage") UserStorage userStorage,
+            FriendshipDao friendshipDao) {
+        this.userStorage = userStorage;
+        this.friendshipDao = friendshipDao;
     }
 
-    public User updateUser(User user) {
+    public User create(User user) {
         validateUser(user);
-        if (user.getName() == null || user.getName().isEmpty()) {
-            user.setName(user.getLogin());
-        }
+        return userStorage.create(user);
+    }
+
+    public User update(User user) {
+        validateUser(user);
         return userStorage.update(user);
     }
 
-    public User getUserById(Integer id) {
-        if (id == null) {
-            throw new ValidationException("ID пользователя не может быть null");
-        }
-        return userStorage.getById(id);
-    }
-
-    public Collection<User> getAllUsers() {
+    public Collection<User> getAll() {
         return userStorage.getAll();
     }
 
-    public void addFriend(Integer userId, Integer friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-        getOrCreateFriendsSet(userId).add(friendId);
-        getOrCreateFriendsSet(friendId).add(userId);
+    public User getById(int id) {
+        return userStorage.getById(id);
     }
 
-    public void removeFriend(Integer userId, Integer friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-        getOrCreateFriendsSet(userId).remove(friendId);
-        getOrCreateFriendsSet(friendId).remove(userId);
+    public void addFriend(int userId, int friendId) {
+        User user = getUserOrThrow(userId);
+        User friend = getUserOrThrow(friendId);
+        friendshipDao.addFriend(userId, friendId);
     }
 
-    public Collection<User> getFriends(Integer userId) {
-        getUserById(userId);
-        Set<Integer> friendsIds = getOrCreateFriendsSet(userId);
-        return friendsIds.stream()
-                .map(id -> userStorage.getById(id))
+    public void confirmFriend(int userId, int friendId) {
+        getUserOrThrow(userId);
+        getUserOrThrow(friendId);
+        friendshipDao.confirmFriend(userId, friendId);
+    }
+
+    public void removeFriend(int userId, int friendId) {
+        getUserOrThrow(userId);
+        getUserOrThrow(friendId);
+        friendshipDao.removeFriend(userId, friendId);
+    }
+
+    public List<User> getFriends(int userId) {
+        getUserOrThrow(userId);
+        List<Integer> friendIds = friendshipDao.getFriends(userId);
+        return friendIds.stream()
+                .map(userStorage::getById)
                 .collect(Collectors.toList());
     }
 
-    public Collection<User> getCommonFriends(Integer userId, Integer otherId) {
-        getUserById(userId);
-        getUserById(otherId);
-        Set<Integer> friends1 = getOrCreateFriendsSet(userId);
-        Set<Integer> friends2 = getOrCreateFriendsSet(otherId);
-        return friends1.stream()
-                .filter(friends2::contains)
-                .map(id -> userStorage.getById(id))
+    public List<User> getCommonFriends(int userId, int otherId) {
+        User user = getUserOrThrow(userId);
+        User other = getUserOrThrow(otherId);
+
+        List<Integer> userFriends = friendshipDao.getFriends(userId);
+        List<Integer> otherFriends = friendshipDao.getFriends(otherId);
+
+        return userFriends.stream()
+                .filter(otherFriends::contains)
+                .map(userStorage::getById)
                 .collect(Collectors.toList());
     }
 
-    private Set<Integer> getOrCreateFriendsSet(Integer userId) {
-        return friendsMap.computeIfAbsent(userId, k -> new HashSet<>());
+    private User getUserOrThrow(int id) {
+        User user = userStorage.getById(id);
+        if (user == null) {
+            throw new RuntimeException("Пользователь с id=" + id + " не найден");
+        }
+        return user;
     }
 
     private void validateUser(User user) {
-        if (user.getEmail() == null || user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
-            throw new ValidationException("Некорректный email");
+        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
+            throw new ValidationException("Электронная почта не может быть пустой и должна содержать @");
         }
         if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            throw new ValidationException("Некорректный login");
+            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
         }
-        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("Дата рождения в будущем");
+        if (user.getBirthday() == null) {
+            throw new ValidationException("Дата рождения обязательна");
+        }
+        if (user.getBirthday().isAfter(LocalDate.now())) {
+            throw new ValidationException("Дата рождения не может быть в будущем");
         }
     }
 }

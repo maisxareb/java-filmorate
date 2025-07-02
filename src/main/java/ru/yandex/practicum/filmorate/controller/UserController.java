@@ -1,66 +1,88 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 
+import java.util.Collection;
+import java.util.List;
+
+@Slf4j
 @RestController
 @RequestMapping("/users")
-@RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
 
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User createdUser = userService.createUser(user);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+    public User create(@RequestBody User user) {
+        log.info("Запрос на создание пользователя: {}", user);
+        setUserNameIfEmpty(user);
+        User createdUser = userService.create(user);
+        log.info("Создан новый пользователь: {}", createdUser);
+        return createdUser;
     }
 
     @PutMapping
-    public ResponseEntity<User> updateUser(@RequestBody User user) {
-        User updatedUser = userService.updateUser(user);
-        return ResponseEntity.ok(updatedUser);
+    public User update(@RequestBody User user) {
+        log.info("Запрос на обновление пользователя: {}", user);
+        setUserNameIfEmpty(user);
+        User updatedUser = userService.update(user);
+        log.info("Обновлен пользователь: {}", updatedUser);
+        return updatedUser;
     }
 
     @GetMapping
-    public ResponseEntity<Collection<User>> getAllUsers() {
-        Collection<User> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
+    public Collection<User> getAll() {
+        return userService.getAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUser(@PathVariable Integer id) {
-        User user = userService.getUserById(id);
-        return ResponseEntity.ok(user);
+    public User getById(@PathVariable int id) {
+        return userService.getById(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Map<String, String>> addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+    public void addFriend(@PathVariable int id, @PathVariable int friendId) {
+        log.info("Запрос на добавление в друзья: {} -> {}", id, friendId);
         userService.addFriend(id, friendId);
-        return ResponseEntity.ok(Collections.singletonMap("message", "Friend added successfully"));
+        log.info("Пользователь {} отправил заявку в друзья пользователю {}", id, friendId);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}/confirm")
+    public void confirmFriend(@PathVariable int id, @PathVariable int friendId) {
+        log.info("Подтверждение дружбы: {} подтверждает {}", id, friendId);
+        userService.confirmFriend(id, friendId);
+        log.info("Пользователь {} подтвердил дружбу с пользователем {}", id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Map<String, String>> removeFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeFriend(@PathVariable int id, @PathVariable int friendId) {
         userService.removeFriend(id, friendId);
-        return ResponseEntity.ok(Collections.singletonMap("message", "Friend removed successfully"));
+        log.info("Пользователь {} удалил из друзей пользователя {}", id, friendId);
     }
 
     @GetMapping("/{id}/friends")
-    public ResponseEntity<Collection<User>> getFriends(@PathVariable Integer id) {
-        Collection<User> friends = userService.getFriends(id);
-        return ResponseEntity.ok(friends);
+    public List<User> getFriends(@PathVariable int id) {
+        return userService.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public ResponseEntity<Collection<User>> getCommonFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
-        Collection<User> commonFriends = userService.getCommonFriends(id, otherId);
-        return ResponseEntity.ok(commonFriends);
+    public List<User> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
+        return userService.getCommonFriends(id, otherId);
+    }
+
+    private void setUserNameIfEmpty(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
     }
 }
